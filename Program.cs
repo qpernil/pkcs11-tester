@@ -12,7 +12,7 @@ namespace foo
             const string path = "libykcs11.1.dylib";
             const string _path = "opensc-pkcs11.so";
             Pkcs11InteropFactories factories = new Pkcs11InteropFactories();
-            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.SingleThreaded))
+            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded))
             {
                 var li = lib.GetInfo();
                 Console.WriteLine(li.LibraryDescription);
@@ -21,11 +21,11 @@ namespace foo
                 Console.WriteLine(li.CryptokiVersion);
                 Console.WriteLine();
 
-                foreach(var slot in lib.GetSlotList(SlotsType.WithTokenPresent))
+                foreach (var slot in lib.GetSlotList(SlotsType.WithOrWithoutTokenPresent))
                 {
                     Console.WriteLine($"SlotId {slot.SlotId:X}");
                     Console.WriteLine();
-                    
+
                     var sli = slot.GetSlotInfo();
                     Console.WriteLine(sli.SlotDescription);
                     Console.WriteLine(sli.FirmwareVersion);
@@ -36,20 +36,35 @@ namespace foo
                     Console.WriteLine(sli.SlotFlags.TokenPresent);
                     Console.WriteLine();
 
+                    if (!sli.SlotFlags.TokenPresent)
+                        continue;
+
                     var ti = slot.GetTokenInfo();
+                    Console.WriteLine(ti.Label);
                     Console.WriteLine(ti.Model);
+                    Console.WriteLine(ti.FirmwareVersion);
+                    Console.WriteLine(ti.ManufacturerId);
                     Console.WriteLine(ti.MaxRwSessionCount);
                     Console.WriteLine(ti.RwSessionCount);
                     Console.WriteLine(ti.MaxSessionCount);
                     Console.WriteLine(ti.SessionCount);
-                    Console.WriteLine(ti.FirmwareVersion);
                     Console.WriteLine(ti.SerialNumber);
                     Console.WriteLine(ti.HardwareVersion);
+                    Console.WriteLine(ti.MinPinLen);
+                    Console.WriteLine(ti.MaxPinLen);
+                    Console.WriteLine(ti.UtcTime);
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
                     Console.WriteLine();
 
                     using (var session = slot.OpenSession(SessionType.ReadOnly))
                     {
+                        var ti2 = slot.GetTokenInfo();
+                        Console.WriteLine(ti2.MaxRwSessionCount);
+                        Console.WriteLine(ti2.RwSessionCount);
+                        Console.WriteLine(ti2.MaxSessionCount);
+                        Console.WriteLine(ti2.SessionCount);
+                        Console.WriteLine();
+
                         var si = session.GetSessionInfo();
                         Console.WriteLine(si.SlotId);
                         Console.WriteLine(si.SessionId);
