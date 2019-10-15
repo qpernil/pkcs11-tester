@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
 
@@ -56,7 +57,7 @@ namespace foo
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
                     Console.WriteLine();
 
-                    using (var session = slot.OpenSession(SessionType.ReadOnly))
+                    using (var session = slot.OpenSession(SessionType.ReadWrite))
                     {
                         var ti2 = slot.GetTokenInfo();
                         Console.WriteLine(ti2.MaxRwSessionCount);
@@ -74,16 +75,37 @@ namespace foo
                         Console.WriteLine(si.SessionFlags.SerialSession);
                         Console.WriteLine();
 
-                        session.Login(CKU.CKU_USER, "123456");
+                        //session.Login(CKU.CKU_USER, "123456");
+                        session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
                         Console.WriteLine(session.GetSessionInfo().State);
+                        /*
+                        session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
+                            new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
+                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
+                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) },
+                            new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
+                            out var pubKey, out var privKey);
 
-                        var objs = session.FindAllObjects(new List<IObjectAttribute>{factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_DATA)*/});
+                        Console.WriteLine($"Pubkey {pubKey.ObjectId}");
+                        Console.WriteLine($"Privkey {privKey.ObjectId}");
+
+                        var cert = session.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
+                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, File.ReadAllBytes("/Users/PNilsson/Documents/Rudy.der")),
+                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
+                        Console.WriteLine($"Cert {cert.ObjectId}");
+
+                        session.DestroyObject(factories.ObjectHandleFactory.Create(37));
+                        */
+
+                        var objs = session.FindAllObjects(new List<IObjectAttribute>{factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                         Console.WriteLine(objs.Count);
                         Console.WriteLine();
 
                         foreach (var obj in objs)
                         {
-                            Console.WriteLine($"ObjectId {obj.ObjectId:X}");
+                            Console.WriteLine($"ObjectId {obj.ObjectId}");
                             var attrs = session.GetAttributeValue(obj, new List<CKA> { CKA.CKA_CLASS, CKA.CKA_TOKEN, CKA.CKA_LABEL, CKA.CKA_ID,
                                 CKA.CKA_KEY_TYPE, CKA.CKA_MODIFIABLE, CKA.CKA_PRIVATE, CKA.CKA_LOCAL, CKA.CKA_SENSITIVE, CKA.CKA_MODULUS_BITS,
                                 CKA.CKA_MODULUS, CKA.CKA_PUBLIC_EXPONENT, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT, CKA.CKA_VALUE });
