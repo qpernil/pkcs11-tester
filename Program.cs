@@ -57,6 +57,11 @@ namespace foo
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
                     Console.WriteLine();
 
+                    slot.OpenSession(SessionType.ReadWrite);
+                    slot.OpenSession(SessionType.ReadWrite);
+                    slot.OpenSession(SessionType.ReadWrite);
+                    slot.CloseAllSessions();
+
                     using (var session = slot.OpenSession(SessionType.ReadWrite))
                     {
                         var ti2 = slot.GetTokenInfo();
@@ -74,9 +79,32 @@ namespace foo
                         Console.WriteLine(si.SessionFlags.RwSession);
                         Console.WriteLine(si.SessionFlags.SerialSession);
                         Console.WriteLine();
-
-                        //session.Login(CKU.CKU_USER, "123456");
-                        session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
+                        
+                        using(var session2 = slot.OpenSession(SessionType.ReadOnly))
+                        {
+                            var si2 = session2.GetSessionInfo();
+                            Console.WriteLine(si2.SlotId);
+                            Console.WriteLine(si2.SessionId);
+                            Console.WriteLine(si2.State);
+                            Console.WriteLine($"{si2.SessionFlags.Flags:X}");
+                            Console.WriteLine(si2.SessionFlags.RwSession);
+                            Console.WriteLine(si2.SessionFlags.SerialSession);
+                            Console.WriteLine();
+                            using (var session3 = slot.OpenSession(SessionType.ReadOnly))
+                            {
+                                var si3 = session3.GetSessionInfo();
+                                Console.WriteLine(si3.SlotId);
+                                Console.WriteLine(si3.SessionId);
+                                Console.WriteLine(si3.State);
+                                Console.WriteLine($"{si3.SessionFlags.Flags:X}");
+                                Console.WriteLine(si3.SessionFlags.RwSession);
+                                Console.WriteLine(si3.SessionFlags.SerialSession);
+                                Console.WriteLine();
+                            }
+                        }
+                        
+                        session.Login(CKU.CKU_USER, "123456");
+                        //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
                         Console.WriteLine(session.GetSessionInfo().State);
                         /*
                         session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
@@ -102,6 +130,8 @@ namespace foo
                         var objs = session.FindAllObjects(new List<IObjectAttribute>{factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                         Console.WriteLine(objs.Count);
                         Console.WriteLine();
+
+                        //continue;
 
                         foreach (var obj in objs)
                         {
