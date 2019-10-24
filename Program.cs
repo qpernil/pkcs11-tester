@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
 
@@ -57,103 +58,100 @@ namespace foo
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
                     Console.WriteLine();
 
-                    slot.OpenSession(SessionType.ReadWrite);
-                    ti = slot.GetTokenInfo();
-                    Console.WriteLine(ti.RwSessionCount);
-                    Console.WriteLine(ti.SessionCount);
-                    Console.WriteLine();
-
-                    slot.OpenSession(SessionType.ReadOnly);
-                    ti = slot.GetTokenInfo();
-                    Console.WriteLine(ti.RwSessionCount);
-                    Console.WriteLine(ti.SessionCount);
-                    Console.WriteLine();
-                    /*
-                    slot.CloseAllSessions();
-                    ti = slot.GetTokenInfo();
-                    Console.WriteLine(ti.RwSessionCount);
-                    Console.WriteLine(ti.SessionCount);
-                    Console.WriteLine();
-                    */
-                    using (var session = slot.OpenSession(SessionType.ReadWrite))
-                    {
-                        ti = slot.GetTokenInfo();
-                        Console.WriteLine(ti.RwSessionCount);
-                        Console.WriteLine(ti.SessionCount);
-                        Console.WriteLine();
-
-                        var si = session.GetSessionInfo();
-                        Console.WriteLine(si.SlotId);
-                        Console.WriteLine(si.SessionId);
-                        Console.WriteLine(si.State);
-                        Console.WriteLine($"{si.SessionFlags.Flags:X}");
-                        Console.WriteLine(si.SessionFlags.RwSession);
-                        Console.WriteLine(si.SessionFlags.SerialSession);
-                        Console.WriteLine();
-                        
-                        session.Login(CKU.CKU_USER, "123456");
-                        //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
-                        Console.WriteLine(session.GetSessionInfo().State);
-                        Console.WriteLine();
-                        /*
-                        session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
-                            new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
-                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
-                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
-                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) },
-                            new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
-                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
-                            out var pubKey, out var privKey);
-
-                        Console.WriteLine($"Pubkey {pubKey.ObjectId}");
-                        Console.WriteLine($"Privkey {privKey.ObjectId}");
-
-                        var cert = session.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
-                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, File.ReadAllBytes("/Users/PNilsson/Documents/Rudy.der")),
-                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
-                        Console.WriteLine($"Cert {cert.ObjectId}");
-
-                        session.DestroyObject(factories.ObjectHandleFactory.Create(37));
-                        */
-
-                        var objs = session.FindAllObjects(new List<IObjectAttribute>{factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
-                        Console.WriteLine(objs.Count);
-                        Console.WriteLine();
-
-                        //continue;
-
-                        foreach (var obj in objs)
+                    Parallel.For(0, 16, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i => {
+                        using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
-                            Console.WriteLine($"ObjectId {obj.ObjectId}");
-                            var attrs = session.GetAttributeValue(obj, new List<CKA> { CKA.CKA_CLASS, CKA.CKA_TOKEN, CKA.CKA_MODIFIABLE, CKA.CKA_LABEL, CKA.CKA_ID,
+                            ti = slot.GetTokenInfo();
+                            /*
+                            Console.WriteLine(ti.RwSessionCount);
+                            Console.WriteLine(ti.SessionCount);
+                            Console.WriteLine();
+                            */
+                            var si = session.GetSessionInfo();
+                            /*
+                            Console.WriteLine(si.SlotId);
+                            Console.WriteLine(si.SessionId);
+                            Console.WriteLine(si.State);
+                            Console.WriteLine($"{si.SessionFlags.Flags:X}");
+                            Console.WriteLine(si.SessionFlags.RwSession);
+                            Console.WriteLine(si.SessionFlags.SerialSession);
+                            Console.WriteLine();
+                            */
+                            session.Login(CKU.CKU_USER, "123456");
+                            //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
+                            /*
+                            Console.WriteLine(session.GetSessionInfo().State);
+                            Console.WriteLine();
+                            */
+                            /*
+                            session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
+                                new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) },
+                                new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
+                                out var pubKey, out var privKey);
+
+                            Console.WriteLine($"Pubkey {pubKey.ObjectId}");
+                            Console.WriteLine($"Privkey {privKey.ObjectId}");
+
+                            var cert = session.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, File.ReadAllBytes("/Users/PNilsson/Documents/Rudy.der")),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
+                            Console.WriteLine($"Cert {cert.ObjectId}");
+
+                            session.DestroyObject(factories.ObjectHandleFactory.Create(37));
+                            */
+
+                            var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
+                            Console.WriteLine(objs.Count);
+                            Console.WriteLine();
+                            //continue;
+
+                            foreach (var obj in objs)
+                            {
+                                Console.WriteLine($"ObjectId {obj.ObjectId}");
+                                var attrs = session.GetAttributeValue(obj, new List<CKA> { CKA.CKA_CLASS, CKA.CKA_TOKEN, CKA.CKA_MODIFIABLE, CKA.CKA_LABEL, CKA.CKA_ID,
                                 CKA.CKA_KEY_TYPE, CKA.CKA_CERTIFICATE_TYPE, CKA.CKA_PRIVATE, CKA.CKA_LOCAL, CKA.CKA_SENSITIVE, CKA.CKA_MODULUS_BITS, CKA.CKA_MODULUS,
                                 CKA.CKA_PUBLIC_EXPONENT, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT, CKA.CKA_VALUE, CKA.CKA_APPLICATION, CKA.CKA_OBJECT_ID,
                                 CKA.CKA_SUBJECT, CKA.CKA_ISSUER, CKA.CKA_SERIAL_NUMBER });
-                            foreach (var attr in attrs)
-                            {
-                                if(!attr.CannotBeRead)
+                                foreach (var attr in attrs)
                                 {
-                                    var val = attr.GetValueAsByteArray();
-                                    var type = (CKA)attr.Type;
-                                    Console.Write($"{type} {val.Length}: ");
-                                    foreach(var b in val)
+                                    if (!attr.CannotBeRead)
                                     {
-                                        Console.Write($"{b:X2}");
-                                    }
-                                    if(type == CKA.CKA_LABEL || type == CKA.CKA_APPLICATION)
-                                    {
-                                        Console.WriteLine($" {attr.GetValueAsString()}");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine();
+                                        var val = attr.GetValueAsByteArray();
+                                        var type = (CKA)attr.Type;
+                                        if (type == CKA.CKA_LABEL || type == CKA.CKA_APPLICATION)
+                                        {
+                                            Console.WriteLine($"{type} {val.Length}: {BitConverter.ToString(val).Replace("-", "")} {attr.GetValueAsString()}");
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine($"{type} {val.Length}: {BitConverter.ToString(val).Replace("-", "")}");
+                                        }
                                     }
                                 }
+                                Console.WriteLine();
                             }
-                            Console.WriteLine();
                         }
-                    }
-                    slot.CloseAllSessions();
+                    });
+                    ti = slot.GetTokenInfo();
+                    Console.WriteLine(ti.Label);
+                    Console.WriteLine(ti.Model);
+                    Console.WriteLine(ti.FirmwareVersion);
+                    Console.WriteLine(ti.ManufacturerId);
+                    Console.WriteLine(ti.MaxRwSessionCount);
+                    Console.WriteLine(ti.RwSessionCount);
+                    Console.WriteLine(ti.MaxSessionCount);
+                    Console.WriteLine(ti.SessionCount);
+                    Console.WriteLine(ti.SerialNumber);
+                    Console.WriteLine(ti.HardwareVersion);
+                    Console.WriteLine(ti.MinPinLen);
+                    Console.WriteLine(ti.MaxPinLen);
+                    Console.WriteLine(ti.UtcTime);
+                    Console.WriteLine($"{ti.TokenFlags.Flags:X}");
+                    Console.WriteLine();
                 }
             }
         }
