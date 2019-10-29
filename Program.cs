@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
 
-namespace foo
+namespace Pkcs11Tester
 {
     class Program
     {
@@ -58,7 +58,18 @@ namespace foo
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
                     Console.WriteLine();
 
-                    Parallel.For(0, 16, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i => {
+                    var s1 = slot.OpenSession(SessionType.ReadOnly);
+                    s1.Login(CKU.CKU_USER, "123456");
+                    var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY) });
+                    var s2 = slot.OpenSession(SessionType.ReadOnly);
+                    //s2.Login(CKU.CKU_USER, "123456");
+                    //s2.CloseSession();
+                    var s = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                    slot.CloseAllSessions();
+
+                    //slot.InitToken("010203040506070801020304050607080102030405060708", "");
+
+                    Parallel.For(0, 16, _ => {
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
                             ti = slot.GetTokenInfo();
@@ -136,22 +147,6 @@ namespace foo
                             }
                         }
                     });
-                    ti = slot.GetTokenInfo();
-                    Console.WriteLine(ti.Label);
-                    Console.WriteLine(ti.Model);
-                    Console.WriteLine(ti.FirmwareVersion);
-                    Console.WriteLine(ti.ManufacturerId);
-                    Console.WriteLine(ti.MaxRwSessionCount);
-                    Console.WriteLine(ti.RwSessionCount);
-                    Console.WriteLine(ti.MaxSessionCount);
-                    Console.WriteLine(ti.SessionCount);
-                    Console.WriteLine(ti.SerialNumber);
-                    Console.WriteLine(ti.HardwareVersion);
-                    Console.WriteLine(ti.MinPinLen);
-                    Console.WriteLine(ti.MaxPinLen);
-                    Console.WriteLine(ti.UtcTime);
-                    Console.WriteLine($"{ti.TokenFlags.Flags:X}");
-                    Console.WriteLine();
                 }
             }
         }
