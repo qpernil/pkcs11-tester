@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
@@ -58,18 +59,25 @@ namespace Pkcs11Tester
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
                     Console.WriteLine();
 
+                    //slot.InitToken("010203040506070801020304050607080102030405060708", "");
+                    
                     var s1 = slot.OpenSession(SessionType.ReadOnly);
                     s1.Login(CKU.CKU_USER, "123456");
-                    var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY) });
+                    var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
+
                     var s2 = slot.OpenSession(SessionType.ReadOnly);
-                    //s2.Login(CKU.CKU_USER, "123456");
-                    //s2.CloseSession();
-                    var s = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+
+                    if(objs1.Count > 0)
+                    {
+                        var sig2 = s2.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                        var sig1 = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                    }
+
+                    s2.Logout();
                     slot.CloseAllSessions();
 
-                    //slot.InitToken("010203040506070801020304050607080102030405060708", "");
-
-                    Parallel.For(0, 16, _ => {
+                    Parallel.For(0, 1, _ => {
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
                             ti = slot.GetTokenInfo();
@@ -90,10 +98,8 @@ namespace Pkcs11Tester
                             */
                             session.Login(CKU.CKU_USER, "123456");
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
-                            /*
                             Console.WriteLine(session.GetSessionInfo().State);
                             Console.WriteLine();
-                            */
                             /*
                             session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
                                 new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
@@ -116,7 +122,7 @@ namespace Pkcs11Tester
                             */
 
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
-                            Console.WriteLine(objs.Count);
+                            Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
                             Console.WriteLine();
                             //continue;
 
@@ -139,6 +145,10 @@ namespace Pkcs11Tester
                                         }
                                         else
                                         {
+                                            if(obj.ObjectId == 61 && type == CKA.CKA_VALUE)
+                                            {
+                                                //File.WriteAllBytes("cert.der", val);
+                                            }
                                             Console.WriteLine($"{type} {val.Length}: {BitConverter.ToString(val).Replace("-", "")}");
                                         }
                                     }
