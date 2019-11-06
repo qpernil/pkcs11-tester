@@ -70,14 +70,15 @@ namespace Pkcs11Tester
 
                     if(objs1.Count > 0)
                     {
-                        var sig2 = s2.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
                         var sig1 = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                        var sig2 = s2.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                        var sig3 = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
                     }
 
                     s2.Logout();
                     slot.CloseAllSessions();
 
-                    Parallel.For(0, 1, _ => {
+                    Parallel.For(0, 16, _ => {
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
                             ti = slot.GetTokenInfo();
