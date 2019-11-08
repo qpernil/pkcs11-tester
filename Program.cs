@@ -64,31 +64,20 @@ namespace Pkcs11Tester
                     var s1 = slot.OpenSession(SessionType.ReadOnly);
                     s1.Login(CKU.CKU_USER, "123456");
                     var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
-                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
+                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
+                    s1.CloseSession();
 
-                    var s2 = slot.OpenSession(SessionType.ReadOnly);
-
-                    if(objs1.Count > 0)
-                    {
-                        var sig1 = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
-                        var sig2 = s2.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
-                        var sig3 = s1.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
-                    }
-
-                    s2.Logout();
-                    slot.CloseAllSessions();
-
-                    Parallel.For(0, 16, _ => {
+                    Parallel.For(0, 8, _ => {
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
-                            ti = slot.GetTokenInfo();
                             /*
+                            ti = slot.GetTokenInfo();
                             Console.WriteLine(ti.RwSessionCount);
                             Console.WriteLine(ti.SessionCount);
                             Console.WriteLine();
                             */
-                            var si = session.GetSessionInfo();
                             /*
+                            var si = session.GetSessionInfo();
                             Console.WriteLine(si.SlotId);
                             Console.WriteLine(si.SessionId);
                             Console.WriteLine(si.State);
@@ -99,8 +88,10 @@ namespace Pkcs11Tester
                             */
                             session.Login(CKU.CKU_USER, "123456");
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
-                            Console.WriteLine(session.GetSessionInfo().State);
-                            Console.WriteLine();
+                            var session2 = slot.OpenSession(SessionType.ReadOnly);
+                            var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                            session2.CloseSession();
+
                             /*
                             session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
                                 new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
@@ -125,7 +116,6 @@ namespace Pkcs11Tester
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
                             Console.WriteLine();
-                            //continue;
 
                             foreach (var obj in objs)
                             {
