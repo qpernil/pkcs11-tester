@@ -51,6 +51,10 @@ namespace Pkcs11Tester
                     Console.WriteLine(ti.RwSessionCount);
                     Console.WriteLine(ti.MaxSessionCount);
                     Console.WriteLine(ti.SessionCount);
+                    Console.WriteLine(ti.TotalPublicMemory);
+                    Console.WriteLine(ti.FreePublicMemory);
+                    Console.WriteLine(ti.TotalPrivateMemory);
+                    Console.WriteLine(ti.FreePrivateMemory);
                     Console.WriteLine(ti.SerialNumber);
                     Console.WriteLine(ti.HardwareVersion);
                     Console.WriteLine(ti.MinPinLen);
@@ -64,7 +68,7 @@ namespace Pkcs11Tester
                     var s1 = slot.OpenSession(SessionType.ReadOnly);
                     s1.Login(CKU.CKU_USER, "123456");
                     var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
-                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
+                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
                     s1.CloseSession();
 
                     Parallel.For(0, 8, _ => {
