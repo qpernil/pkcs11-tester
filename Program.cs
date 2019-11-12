@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
@@ -71,9 +72,13 @@ namespace Pkcs11Tester
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
                     s1.CloseSession();
 
+                    var sw = Stopwatch.StartNew();
+
                     Parallel.For(0, 8, _ => {
+                        var sw3 = Stopwatch.StartNew();
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
+                            Console.WriteLine($"Session {session.SessionId} OpenSession {sw3.Elapsed}");
                             /*
                             ti = slot.GetTokenInfo();
                             Console.WriteLine(ti.RwSessionCount);
@@ -93,7 +98,9 @@ namespace Pkcs11Tester
                             session.Login(CKU.CKU_USER, "123456");
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
+                            var sw2 = Stopwatch.StartNew();
                             var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
+                            Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed}");
                             session2.CloseSession();
 
                             /*
@@ -120,7 +127,7 @@ namespace Pkcs11Tester
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
                             Console.WriteLine();
-
+                            /*
                             foreach (var obj in objs)
                             {
                                 Console.WriteLine($"ObjectId {obj.ObjectId}");
@@ -149,9 +156,10 @@ namespace Pkcs11Tester
                                     }
                                 }
                                 Console.WriteLine();
-                            }
+                            }*/
                         }
                     });
+                    Console.WriteLine(sw.Elapsed);
                 }
             }
         }
