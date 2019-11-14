@@ -15,7 +15,7 @@ namespace Pkcs11Tester
             const string path = "libykcs11.1.dylib";
             const string _path = "opensc-pkcs11.so";
             Pkcs11InteropFactories factories = new Pkcs11InteropFactories();
-            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded))
+            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded, InitType.WithFunctionList))
             {
                 var li = lib.GetInfo();
                 Console.WriteLine(li.LibraryDescription);
@@ -130,7 +130,7 @@ namespace Pkcs11Tester
                             /*
                             foreach (var obj in objs)
                             {
-                                Console.WriteLine($"ObjectId {obj.ObjectId}");
+                                Console.WriteLine($"ObjectId {obj.ObjectId} size {session.GetObjectSize(obj)}");
                                 var attrs = session.GetAttributeValue(obj, new List<CKA> { CKA.CKA_CLASS, CKA.CKA_TOKEN, CKA.CKA_MODIFIABLE, CKA.CKA_LABEL, CKA.CKA_ID,
                                 CKA.CKA_KEY_TYPE, CKA.CKA_CERTIFICATE_TYPE, CKA.CKA_PRIVATE, CKA.CKA_LOCAL, CKA.CKA_SENSITIVE, CKA.CKA_MODULUS_BITS, CKA.CKA_MODULUS,
                                 CKA.CKA_PUBLIC_EXPONENT, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT, CKA.CKA_VALUE, CKA.CKA_APPLICATION, CKA.CKA_OBJECT_ID,
