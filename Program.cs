@@ -66,7 +66,36 @@ namespace Pkcs11Tester
 
                     //slot.InitToken("010203040506070801020304050607080102030405060708", "");
                     
-                    var s1 = slot.OpenSession(SessionType.ReadOnly);
+                    var s1 = slot.OpenSession(SessionType.ReadWrite);
+                    
+                    s1.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
+
+                    s1.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
+                        new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) },
+                        new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
+                        out var pubKey, out var privKey);
+
+                    Console.WriteLine($"Pubkey {pubKey.ObjectId}");
+                    Console.WriteLine($"Privkey {privKey.ObjectId}");
+
+                    s1.Logout();
+                    continue;
+                    /*
+                    
+                    var cert = s1.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
+                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, File.ReadAllBytes("/Users/PNilsson/Documents/Rudy.der")),
+                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
+                    Console.WriteLine($"Cert {cert.ObjectId}");
+
+                    s1.DestroyObject(factories.ObjectHandleFactory.Create(37));
+                    
+                    s1.Logout();
+                    */
+
                     s1.Login(CKU.CKU_USER, "123456");
                     var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
@@ -103,31 +132,10 @@ namespace Pkcs11Tester
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed}");
                             session2.CloseSession();
 
-                            /*
-                            session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
-                                new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) },
-                                new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
-                                out var pubKey, out var privKey);
-
-                            Console.WriteLine($"Pubkey {pubKey.ObjectId}");
-                            Console.WriteLine($"Privkey {privKey.ObjectId}");
-
-                            var cert = session.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, File.ReadAllBytes("/Users/PNilsson/Documents/Rudy.der")),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
-                            Console.WriteLine($"Cert {cert.ObjectId}");
-
-                            session.DestroyObject(factories.ObjectHandleFactory.Create(37));
-                            */
-
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
                             Console.WriteLine();
-                            /*
+                            
                             foreach (var obj in objs)
                             {
                                 Console.WriteLine($"ObjectId {obj.ObjectId} size {session.GetObjectSize(obj)}");
@@ -147,16 +155,16 @@ namespace Pkcs11Tester
                                         }
                                         else
                                         {
-                                            if(obj.ObjectId == 61 && type == CKA.CKA_VALUE)
+                                            if(obj.ObjectId == 63 && type == CKA.CKA_VALUE)
                                             {
-                                                //File.WriteAllBytes("cert.der", val);
+                                                File.WriteAllBytes("cert.der", val);
                                             }
                                             Console.WriteLine($"{type} {val.Length}: {BitConverter.ToString(val).Replace("-", "")}");
                                         }
                                     }
                                 }
                                 Console.WriteLine();
-                            }*/
+                            }
                         }
                     });
                     Console.WriteLine(sw.Elapsed);
