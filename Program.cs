@@ -65,16 +65,16 @@ namespace Pkcs11Tester
                     Console.WriteLine();
 
                     //slot.InitToken("010203040506070801020304050607080102030405060708", "");
-                    
-                    var s1 = slot.OpenSession(SessionType.ReadWrite);
-                    
-                    s1.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
 
+                    var s1 = slot.OpenSession(SessionType.ReadWrite);
+
+                    /*
+                    s1.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
                     s1.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
                         new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
                                                              factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
                                                              factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) },
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0x19 }) },
                         new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                              factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
                         out var pubKey, out var privKey);
@@ -82,10 +82,12 @@ namespace Pkcs11Tester
                     Console.WriteLine($"Pubkey {pubKey.ObjectId}");
                     Console.WriteLine($"Privkey {privKey.ObjectId}");
 
+                    //s1.DestroyObject(pubKey);
+                    //s1.DestroyObject(privKey);
+
                     s1.Logout();
-                    continue;
+                    */
                     /*
-                    
                     var cert = s1.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, File.ReadAllBytes("/Users/PNilsson/Documents/Rudy.der")),
                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
@@ -95,12 +97,10 @@ namespace Pkcs11Tester
                     
                     s1.Logout();
                     */
-
                     s1.Login(CKU.CKU_USER, "123456");
                     var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
                     s1.CloseSession();
-
                     var sw = Stopwatch.StartNew();
 
                     Parallel.For(0, 8, _ => {
@@ -126,6 +126,7 @@ namespace Pkcs11Tester
                             */
                             session.Login(CKU.CKU_USER, "123456");
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
+
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
                             var sw2 = Stopwatch.StartNew();
                             var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
@@ -135,7 +136,7 @@ namespace Pkcs11Tester
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
                             Console.WriteLine();
-                            
+
                             foreach (var obj in objs)
                             {
                                 Console.WriteLine($"ObjectId {obj.ObjectId} size {session.GetObjectSize(obj)}");
