@@ -100,10 +100,12 @@ namespace Pkcs11Tester
                     s1.Login(CKU.CKU_USER, "123456");
                     var objs1 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
+                    var objs2 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 2 }) });
                     s1.CloseSession();
                     var sw = Stopwatch.StartNew();
 
-                    Parallel.For(0, 8, _ => {
+                    Parallel.For(0, 1, _ => {
                         var sw3 = Stopwatch.StartNew();
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
@@ -129,9 +131,16 @@ namespace Pkcs11Tester
 
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
                             var sw2 = Stopwatch.StartNew();
-                            var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA), objs1[0], new byte[32]);
-                            Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed}");
+
+                            var data = new byte[48];
+                            new Random().NextBytes(data);
+                            
+                            var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs2[0], data, sig, out var valid);
+                            Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
                             session2.CloseSession();
+
+                            return;
 
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
