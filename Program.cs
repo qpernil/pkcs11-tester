@@ -130,25 +130,28 @@ namespace Pkcs11Tester
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
 
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
-                            var sw2 = Stopwatch.StartNew();
 
                             var data = new byte[20];
                             new Random().NextBytes(data);
-                            
-                            var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs1[0], data);
-                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs2[0], data, sig, out var valid);
+
+                            var sw2 = Stopwatch.StartNew();
+                            var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_PSS), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_PSS), objs2[0], data, sig, out var valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
-                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA1_RSA_PKCS), objs1[0], data);
-                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA1_RSA_PKCS), objs2[0], data, sig, out valid);
+                            sw2.Restart();
+                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS_PSS), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS_PSS), objs2[0], data, sig, out valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
-                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA1_RSA_PKCS), objs1[0], data);
-                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA1_RSA_PKCS), objs2[0], data, sig, out valid);
+                            sw2.Restart();
+                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS), objs2[0], data, sig, out valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
-                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA1_RSA_PKCS), objs1[0], data);
-                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA1_RSA_PKCS), objs2[0], data, sig, out valid);
+                            sw2.Restart();
+                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA512_RSA_PKCS), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA512_RSA_PKCS), objs2[0], data, sig, out valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
                             session2.CloseSession();
