@@ -164,19 +164,19 @@ namespace Pkcs11Tester
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
                             session2.CloseSession();
 
-                            return;
-
-                            var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true)/*, factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
-                            Console.WriteLine($"Session {session.SessionId} found {objs.Count} CKA_TOKEN objects");
+                            var objs = session.FindAllObjects(new List<IObjectAttribute> { /*factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true), factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
+                            Console.WriteLine($"Session {session.SessionId} found {objs.Count} objects");
                             Console.WriteLine();
 
                             foreach (var obj in objs)
                             {
                                 Console.WriteLine($"ObjectId {obj.ObjectId} size {session.GetObjectSize(obj)}");
+
                                 var attrs = session.GetAttributeValue(obj, new List<CKA> { CKA.CKA_CLASS, CKA.CKA_TOKEN, CKA.CKA_MODIFIABLE, CKA.CKA_LABEL, CKA.CKA_ID,
-                                CKA.CKA_KEY_TYPE, CKA.CKA_CERTIFICATE_TYPE, CKA.CKA_PRIVATE, CKA.CKA_LOCAL, CKA.CKA_SENSITIVE, CKA.CKA_MODULUS_BITS, CKA.CKA_MODULUS,
-                                CKA.CKA_PUBLIC_EXPONENT, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT, CKA.CKA_VALUE, CKA.CKA_APPLICATION, CKA.CKA_OBJECT_ID,
-                                CKA.CKA_SUBJECT, CKA.CKA_ISSUER, CKA.CKA_SERIAL_NUMBER });
+                                CKA.CKA_KEY_TYPE, CKA.CKA_CERTIFICATE_TYPE, CKA.CKA_PRIVATE, CKA.CKA_LOCAL, CKA.CKA_SENSITIVE, CKA.CKA_ALWAYS_SENSITIVE, CKA.CKA_MODULUS_BITS,
+                                CKA.CKA_MODULUS, CKA.CKA_PUBLIC_EXPONENT, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT, CKA.CKA_VALUE, CKA.CKA_APPLICATION, CKA.CKA_OBJECT_ID,
+                                CKA.CKA_EXTRACTABLE, CKA.CKA_NEVER_EXTRACTABLE, CKA.CKA_SUBJECT, CKA.CKA_ISSUER, CKA.CKA_SERIAL_NUMBER });
+
                                 foreach (var attr in attrs)
                                 {
                                     if (!attr.CannotBeRead)
