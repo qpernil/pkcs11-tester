@@ -131,7 +131,7 @@ namespace Pkcs11Tester
 
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
 
-                            var data = new byte[20];
+                            var data = new byte[32];
                             new Random().NextBytes(data);
 
                             var sw2 = Stopwatch.StartNew();
