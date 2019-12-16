@@ -5,11 +5,24 @@ using System.IO;
 using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
+using Net.Pkcs11Interop.HighLevelAPI.Factories;
+using Net.Pkcs11Interop.HighLevelAPI.MechanismParams;
 
 namespace Pkcs11Tester
 {
     class Program
     {
+        static ICkRsaPkcsPssParams CreatePssParams(Pkcs11InteropFactories factories, string hashAlgorithm)
+        {
+            switch(hashAlgorithm)
+            {
+                case "SHA1": return factories.MechanismParamsFactory.CreateCkRsaPkcsPssParams((ulong)CKM.CKM_SHA_1, (ulong)CKG.CKG_MGF1_SHA1, 20);
+                case "SHA256": return factories.MechanismParamsFactory.CreateCkRsaPkcsPssParams((ulong)CKM.CKM_SHA256, (ulong)CKG.CKG_MGF1_SHA256, 32);
+                case "SHA384": return factories.MechanismParamsFactory.CreateCkRsaPkcsPssParams((ulong)CKM.CKM_SHA384, (ulong)CKG.CKG_MGF1_SHA384, 48);
+                case "SHA512": return factories.MechanismParamsFactory.CreateCkRsaPkcsPssParams((ulong)CKM.CKM_SHA512, (ulong)CKG.CKG_MGF1_SHA512, 64);
+            }
+            return null;
+        }
         static void Main(string[] args)
         {
             const string path = "libykcs11.1.dylib";
@@ -131,7 +144,7 @@ namespace Pkcs11Tester
 
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
 
-                            var data = new byte[32];
+                            var data = new byte[48];
                             new Random().NextBytes(data);
 
                             var sw2 = Stopwatch.StartNew();
@@ -145,13 +158,13 @@ namespace Pkcs11Tester
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
                             sw2.Restart();
-                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_PSS), objs1[0], data);
-                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_PSS), objs2[0], data, sig, out valid);
+                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_PSS, CreatePssParams(factories, "SHA384")), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_PSS, CreatePssParams(factories, "SHA384")), objs2[0], data, sig, out valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
                             sw2.Restart();
-                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS_PSS), objs1[0], data);
-                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS_PSS), objs2[0], data, sig, out valid);
+                            sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS_PSS, CreatePssParams(factories, "SHA256")), objs1[0], data);
+                            session.Verify(factories.MechanismFactory.Create(CKM.CKM_SHA256_RSA_PKCS_PSS, CreatePssParams(factories, "SHA256")), objs2[0], data, sig, out valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
 
                             data = new byte[256];
@@ -167,6 +180,8 @@ namespace Pkcs11Tester
                             var objs = session.FindAllObjects(new List<IObjectAttribute> { /*factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true), factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 3 })*/ });
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} objects");
                             Console.WriteLine();
+
+                            return;
 
                             foreach (var obj in objs)
                             {
