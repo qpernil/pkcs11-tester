@@ -118,7 +118,7 @@ namespace Pkcs11Tester
                     s1.CloseSession();
                     var sw = Stopwatch.StartNew();
 
-                    Parallel.For(0, 8, _ => {
+                    Parallel.For(0, 8, i => {
                         var sw3 = Stopwatch.StartNew();
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
@@ -139,7 +139,8 @@ namespace Pkcs11Tester
                             Console.WriteLine(si.SessionFlags.SerialSession);
                             Console.WriteLine();
                             */
-                            session.Login(CKU.CKU_USER, "123456");
+                            if(i == 0)
+                                session.Login(CKU.CKU_USER, "123456");
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
 
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
