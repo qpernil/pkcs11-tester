@@ -115,10 +115,9 @@ namespace Pkcs11Tester
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) });
                     var objs2 = s1.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 4 }) });
-                    s1.CloseSession();
                     var sw = Stopwatch.StartNew();
 
-                    Parallel.For(0, 8, i => {
+                    Parallel.For(0, 7, i => {
                         var sw3 = Stopwatch.StartNew();
                         using (var session = slot.OpenSession(SessionType.ReadWrite))
                         {
@@ -139,8 +138,6 @@ namespace Pkcs11Tester
                             Console.WriteLine(si.SessionFlags.SerialSession);
                             Console.WriteLine();
                             */
-                            if(i == 0)
-                                session.Login(CKU.CKU_USER, "123456");
                             //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
 
                             var session2 = slot.OpenSession(SessionType.ReadOnly);
@@ -215,6 +212,7 @@ namespace Pkcs11Tester
                             }
                         }
                     });
+                    s1.CloseSession();
                     Console.WriteLine(sw.Elapsed);
                 }
             }
