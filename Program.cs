@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
-using Net.Pkcs11Interop.HighLevelAPI.Factories;
 using Net.Pkcs11Interop.HighLevelAPI.MechanismParams;
 
 namespace Pkcs11Tester
