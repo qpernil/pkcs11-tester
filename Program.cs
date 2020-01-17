@@ -84,18 +84,18 @@ namespace Pkcs11Tester
                         Console.WriteLine($"Mech {mech.Mechanism} {mech.MechanismFlags.Flags:X} {mech.MinKeySize} {mech.MaxKeySize}");
                     }
                     Console.WriteLine();
-
+                    
                     //slot.InitToken("010203040506070801020304050607080102030405060708", "");
 
                     var s1 = slot.OpenSession(SessionType.ReadWrite);
-
-                    /*
+                    /*                    
                     s1.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
+                    
                     s1.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
                         new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
                                                              factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
                                                              factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
-                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0x19 }) },
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0x04 }) },
                         new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                              factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
                         out var pubKey, out var privKey);
@@ -103,8 +103,17 @@ namespace Pkcs11Tester
                     Console.WriteLine($"Pubkey {pubKey.ObjectId}");
                     Console.WriteLine($"Privkey {privKey.ObjectId}");
 
-                    //s1.DestroyObject(pubKey);
-                    //s1.DestroyObject(privKey);
+                    s1.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
+                        new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0x19 }) },
+                        new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA) },
+                        out pubKey, out privKey);
+
+                    Console.WriteLine($"Pubkey {pubKey.ObjectId}");
+                    Console.WriteLine($"Privkey {privKey.ObjectId}");
 
                     s1.Logout();
                     */
