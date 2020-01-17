@@ -38,7 +38,7 @@ namespace Pkcs11Tester
 
                 foreach (var slot in lib.GetSlotList(SlotsType.WithOrWithoutTokenPresent))
                 {
-                    Console.WriteLine($"SlotId {slot.SlotId:X}");
+                    Console.WriteLine($"SlotId {slot.SlotId}");
                     Console.WriteLine();
 
                     var sli = slot.GetSlotInfo();
@@ -74,6 +74,15 @@ namespace Pkcs11Tester
                     Console.WriteLine(ti.MaxPinLen);
                     Console.WriteLine(ti.UtcTime);
                     Console.WriteLine($"{ti.TokenFlags.Flags:X}");
+                    Console.WriteLine();
+
+                    var mechList = slot.GetMechanismList();
+                    Console.WriteLine($"{mechList.Count} mechanisms supported");
+                    foreach (var mechType in mechList)
+                    {
+                        var mech = slot.GetMechanismInfo(mechType);
+                        Console.WriteLine($"Mech {mech.Mechanism} {mech.MechanismFlags.Flags:X} {mech.MinKeySize} {mech.MaxKeySize}");
+                    }
                     Console.WriteLine();
 
                     //slot.InitToken("010203040506070801020304050607080102030405060708", "");
