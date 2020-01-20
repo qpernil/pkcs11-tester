@@ -217,10 +217,10 @@ namespace Pkcs11Tester
                                         }
                                         else
                                         {
-                                            if(obj.ObjectId == 63 && type == CKA.CKA_VALUE)
+                                            /*if(obj.ObjectId == 63 && type == CKA.CKA_VALUE)
                                             {
                                                 File.WriteAllBytes("cert.der", val);
-                                            }
+                                            }*/
                                             Console.WriteLine($"{type} {val.Length}: {BitConverter.ToString(val).Replace("-", "")}");
                                         }
                                     }
