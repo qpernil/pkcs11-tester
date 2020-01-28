@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
@@ -194,7 +195,15 @@ namespace Pkcs11Tester
                             session.Verify(factories.MechanismFactory.Create(CKM.CKM_RSA_X_509), objs2[0], data, sig, out valid);
                             Console.WriteLine($"Session {session.SessionId} Sign {sw2.Elapsed} Valid {valid}");
                             session2.CloseSession();
+                            
+                            sw2.Restart();
+                            var enc = session.Encrypt(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs2[0], new byte[64]);
+                            Console.WriteLine($"Session {session.SessionId} Encrypt {sw2.Elapsed}");
 
+                            sw2.Restart();
+                            var dec = session.Decrypt(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs1[0], enc);
+                            Console.WriteLine($"Session {session.SessionId} Decrypt {sw2.Elapsed} Valid {dec.SequenceEqual(new byte[64])}");
+                            
                             var objs = session.FindAllObjects(null);
                             Console.WriteLine($"Session {session.SessionId} found {objs.Count} objects");
                             Console.WriteLine();
