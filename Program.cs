@@ -26,7 +26,7 @@ namespace Pkcs11Tester
         static void Main(string[] args)
         {
             const string path = "libykcs11.1.dylib";
-            const string _path = "opensc-pkcs11.so";
+            //const string _path = "opensc-pkcs11.so";
             Pkcs11InteropFactories factories = new Pkcs11InteropFactories();
             using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded, InitType.WithFunctionList))
             {
