@@ -25,8 +25,8 @@ namespace Pkcs11Tester
         }
         static void Main(string[] args)
         {
-            const string path = "libykcs11.1.dylib";
-            //const string _path = "opensc-pkcs11.so";
+            const string path = "/usr/local/lib/libykcs11.dylib";
+            //const string path = "/usr/local/lib/opensc-pkcs11.so";
             Pkcs11InteropFactories factories = new Pkcs11InteropFactories();
             using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded, InitType.WithFunctionList))
             {
@@ -248,9 +248,13 @@ namespace Pkcs11Tester
                                         }
                                         else
                                         {
-                                            if(obj.ObjectId == 65 && type == CKA.CKA_VALUE)
+                                            if (obj.ObjectId == 61 && type == CKA.CKA_VALUE)
                                             {
-                                                File.WriteAllBytes("cert9e.der", val);
+                                                File.WriteAllBytes("attest.der", val);
+                                            }
+                                            if (obj.ObjectId == 65 && type == CKA.CKA_VALUE)
+                                            {
+                                                File.WriteAllBytes("attest9e.der", val);
                                             }
                                             Console.WriteLine($"{type} {val.Length}: {BitConverter.ToString(val).Replace("-", "")}");
                                         }
