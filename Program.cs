@@ -38,6 +38,47 @@ namespace Pkcs11Tester
                 Console.WriteLine(li.CryptokiVersion);
                 Console.WriteLine();
 
+                foreach (var slot in lib.GetSlotList(SlotsType.WithTokenPresent))
+                {
+                    Console.WriteLine($"SlotId {slot.SlotId}");
+                    Console.WriteLine();
+
+                    using (var session = slot.OpenSession(SessionType.ReadWrite))
+                    {
+                        session.Login(CKU.CKU_USER, "123456");
+                    }
+                }
+
+                Console.Write("Remove and reinsert YubiKey, then press ENTER to continue");
+                Console.ReadLine();
+
+                foreach (var slot in lib.GetSlotList(SlotsType.WithTokenPresent))
+                {
+                    Console.WriteLine($"SlotId {slot.SlotId}");
+                    Console.WriteLine();
+
+                    using (var session = slot.OpenSession(SessionType.ReadWrite))
+                    {
+                        session.Login(CKU.CKU_USER, "123456");
+                    }
+                }
+            }
+        }
+        static void xMain(string[] args)
+        {
+            const string path = "/usr/local/lib/libykcs11.dylib";
+            //const string path = "/usr/local/lib/pkcs11/yubihsm_pkcs11.dylib";
+            //const string path = "/usr/local/lib/opensc-pkcs11.so";
+            Pkcs11InteropFactories factories = new Pkcs11InteropFactories();
+            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded, InitType.WithFunctionList))
+            {
+                var li = lib.GetInfo();
+                Console.WriteLine(li.LibraryDescription);
+                Console.WriteLine(li.ManufacturerId);
+                Console.WriteLine(li.LibraryVersion);
+                Console.WriteLine(li.CryptokiVersion);
+                Console.WriteLine();
+
                 foreach (var slot in lib.GetSlotList(SlotsType.WithOrWithoutTokenPresent))
                 {
                     Console.WriteLine($"SlotId {slot.SlotId}");
