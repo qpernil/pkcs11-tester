@@ -40,7 +40,7 @@ namespace Pkcs11Tester
 
                 foreach (var slot in lib.GetSlotList(SlotsType.WithTokenPresent))
                 {
-                    Console.WriteLine($"SlotId {slot.SlotId}");
+                    Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().SlotDescription}'");
                     Console.WriteLine();
 
                     using (var session = slot.OpenSession(SessionType.ReadWrite))
@@ -54,7 +54,7 @@ namespace Pkcs11Tester
 
                 foreach (var slot in lib.GetSlotList(SlotsType.WithTokenPresent))
                 {
-                    Console.WriteLine($"SlotId {slot.SlotId}");
+                    Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().SlotDescription}'");
                     Console.WriteLine();
 
                     using (var session = slot.OpenSession(SessionType.ReadWrite))
