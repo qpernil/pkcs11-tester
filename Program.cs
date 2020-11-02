@@ -42,9 +42,10 @@ namespace Pkcs11Tester
                 {
                     Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().SlotDescription}'");
 
-                    using (var session = slot.OpenSession(SessionType.ReadWrite))
+                    var session = slot.OpenSession(SessionType.ReadWrite);
                     {
                         Console.WriteLine(session.SessionId);
+                        Console.WriteLine(session.GetSessionInfo().State);
 
                         session.Login(CKU.CKU_USER, "123456");
 
@@ -63,15 +64,17 @@ namespace Pkcs11Tester
                 {
                     Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().SlotDescription}'");
 
-                    using (var session = slot.OpenSession(SessionType.ReadWrite))
+                    var session = slot.OpenSession(SessionType.ReadWrite);
                     {
                         Console.WriteLine(session.SessionId);
+                        Console.WriteLine(session.GetSessionInfo().State);
 
-                        session.Login(CKU.CKU_USER, "123456");
+                        if (session.GetSessionInfo().State == CKS.CKS_RW_PUBLIC_SESSION)
+                            session.Login(CKU.CKU_USER, "123456");
 
                         var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
-
+                        
                         var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs[0], new byte[32]);
                         Console.WriteLine(sig.Length);
                     }
