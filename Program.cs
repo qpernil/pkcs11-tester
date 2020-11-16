@@ -38,6 +38,14 @@ namespace Pkcs11Tester
                 Console.WriteLine(li.CryptokiVersion);
                 Console.WriteLine();
 
+                foreach (var slot in lib.GetSlotList(SlotsType.WithOrWithoutTokenPresent))
+                {
+                    Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().SlotDescription}'");
+                    Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().ManufacturerId}'");
+                    Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().HardwareVersion}'");
+                    Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().FirmwareVersion}'");
+                }
+
                 foreach (var slot in lib.GetSlotList(SlotsType.WithTokenPresent))
                 {
                     Console.WriteLine($"SlotId {slot.SlotId}: '{slot.GetSlotInfo().SlotDescription}'");
