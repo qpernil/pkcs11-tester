@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Net.Pkcs11Interop.Common;
 using Net.Pkcs11Interop.HighLevelAPI;
@@ -12,6 +14,12 @@ namespace Pkcs11Tester
 {
     static class Program
     {
+        static IntPtr CustomDllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? dllImportSearchPath)
+        {
+            string mappedLibraryName = (libraryName == "libdl") ? "libdl.so.2" : libraryName;
+            Console.WriteLine($"Mapping {libraryName} to {mappedLibraryName}");
+            return NativeLibrary.Load(mappedLibraryName, assembly, dllImportSearchPath);
+        }
         static ICkRsaPkcsPssParams CreatePssParams(this Pkcs11InteropFactories factories, CKM hashAlgorithm)
         {
             switch(hashAlgorithm)
@@ -25,6 +33,7 @@ namespace Pkcs11Tester
         }
         static void Main(string[] args)
         {
+            NativeLibrary.SetDllImportResolver(typeof(Pkcs11InteropFactories).Assembly, CustomDllImportResolver);
             const string path = "/usr/local/lib/libykcs11.dylib";
             //const string path = "/usr/local/lib/pkcs11/yubihsm_pkcs11.dylib";
             //const string path = "/usr/local/lib/opensc-pkcs11.so";
