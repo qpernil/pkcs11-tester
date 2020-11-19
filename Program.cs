@@ -16,9 +16,8 @@ namespace Pkcs11Tester
     {
         static IntPtr CustomDllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? dllImportSearchPath)
         {
-            string mappedLibraryName = (libraryName == "libdl") ? "libdl.so.2" : libraryName;
-            Console.WriteLine($"Mapping {libraryName} to {mappedLibraryName}");
-            return NativeLibrary.Load(mappedLibraryName, assembly, dllImportSearchPath);
+            Console.WriteLine($"Mapping {libraryName}");
+            return NativeLibrary.Load(libraryName, assembly, dllImportSearchPath);
         }
         static ICkRsaPkcsPssParams CreatePssParams(this Pkcs11InteropFactories factories, CKM hashAlgorithm)
         {
@@ -33,7 +32,7 @@ namespace Pkcs11Tester
         }
         static void Main(string[] args)
         {
-            NativeLibrary.SetDllImportResolver(typeof(Pkcs11InteropFactories).Assembly, CustomDllImportResolver);
+            //NativeLibrary.SetDllImportResolver(typeof(Pkcs11InteropFactories).Assembly, CustomDllImportResolver);
             const string path = "/usr/local/lib/libykcs11.dylib";
             //const string path = "/usr/local/lib/pkcs11/yubihsm_pkcs11.dylib";
             //const string path = "/usr/local/lib/opensc-pkcs11.so";
