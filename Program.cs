@@ -30,14 +30,20 @@ namespace Pkcs11Tester
             }
             return null;
         }
+        public static string GetLibraryName(string name, string path = null)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return $"{path}lib{name}.dylib";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return $"{path}lib{name}.so";
+            else
+                return $"{path}{name}.dll";
+        }
         static void Main(string[] args)
         {
             //NativeLibrary.SetDllImportResolver(typeof(Pkcs11InteropFactories).Assembly, CustomDllImportResolver);
-            const string path = "/usr/local/lib/libykcs11.dylib";
-            //const string path = "/usr/local/lib/pkcs11/yubihsm_pkcs11.dylib";
-            //const string path = "/usr/local/lib/opensc-pkcs11.so";
             Pkcs11InteropFactories factories = new Pkcs11InteropFactories();
-            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, path, AppType.MultiThreaded, InitType.WithFunctionList))
+            using (var lib = factories.Pkcs11LibraryFactory.LoadPkcs11Library(factories, GetLibraryName("ykcs11"), AppType.MultiThreaded, InitType.WithFunctionList))
             {
                 var li = lib.GetInfo();
                 Console.WriteLine(li.LibraryDescription);
