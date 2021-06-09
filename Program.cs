@@ -70,12 +70,32 @@ namespace Pkcs11Tester
                         Console.WriteLine(session.SessionId);
                         Console.WriteLine(session.GetSessionInfo().State);
 
+                        //session.Login(CKU.CKU_USER, "123457");
+                        session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
+                        Console.WriteLine(session.GetSessionInfo().State);
+
+                        var handle = session.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }),
+                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_EC_PARAMS, new byte[]
+                                                                            { 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07 }),
+                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
+                                                                            { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+                                                                            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                                                            0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
+                                                                            0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x50-2 }) });
+
+                        var vals = session.GetAttributeValue(handle, new List<CKA> { CKA.CKA_KEY_TYPE });
+                        var type = (CKK)vals[0].GetValueAsUlong();
+
+                        session.Logout();
+                        Console.WriteLine(session.GetSessionInfo().State);
                         session.Login(CKU.CKU_USER, "123456");
+                        Console.WriteLine(session.GetSessionInfo().State);
 
                         var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
 
-                        var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs[0], new byte[32]);
+                        var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs[0], new byte[32]);
                         Console.WriteLine(sig.Length);
                     }
                 }
@@ -92,13 +112,16 @@ namespace Pkcs11Tester
                         Console.WriteLine(session.SessionId);
                         Console.WriteLine(session.GetSessionInfo().State);
 
-                        if (session.GetSessionInfo().State == CKS.CKS_RW_PUBLIC_SESSION)
+                        if (session.GetSessionInfo().State != CKS.CKS_RW_USER_FUNCTIONS)
+                        {
                             session.Login(CKU.CKU_USER, "123456");
+                            Console.WriteLine(session.GetSessionInfo().State);
+                        }
 
                         var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
                         
-                        var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS), objs[0], new byte[32]);
+                        var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs[0], new byte[32]);
                         Console.WriteLine(sig.Length);
                     }
                 }
