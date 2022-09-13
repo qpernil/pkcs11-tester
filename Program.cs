@@ -67,12 +67,13 @@ namespace Pkcs11Tester
 
                     var session = slot.OpenSession(SessionType.ReadWrite);
                     {
-                        Console.WriteLine(session.SessionId);
-                        Console.WriteLine(session.GetSessionInfo().State);
+                        Console.WriteLine($"Session id {session.SessionId}");
+                        Console.WriteLine($"Session state {session.GetSessionInfo().State}");
 
                         //session.Login(CKU.CKU_USER, "123457");
+
                         session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
-                        Console.WriteLine(session.GetSessionInfo().State);
+                        Console.WriteLine($"Session state {session.GetSessionInfo().State}");
 
                         var handle = session.CreateObject(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                         factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }),
@@ -86,17 +87,23 @@ namespace Pkcs11Tester
 
                         var vals = session.GetAttributeValue(handle, new List<CKA> { CKA.CKA_KEY_TYPE });
                         var type = (CKK)vals[0].GetValueAsUlong();
+                        Console.WriteLine($"CKA_KEY_TYPE {type}");
 
                         session.Logout();
-                        Console.WriteLine(session.GetSessionInfo().State);
+                        Console.WriteLine($"Session state {session.GetSessionInfo().State}");
                         session.Login(CKU.CKU_USER, "123456");
-                        Console.WriteLine(session.GetSessionInfo().State);
+                        Console.WriteLine($"Session state {session.GetSessionInfo().State}");
 
                         var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
 
+
+                        var vals2 = session.GetAttributeValue(objs[0], new List<CKA> { CKA.CKA_EC_PARAMS });
+                        var val = vals2[0].GetValueAsByteArray();
+                        Console.WriteLine($"CKA_EC_PARAMS length {val.Length}");
+
                         var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs[0], new byte[32]);
-                        Console.WriteLine(sig.Length);
+                        Console.WriteLine($"Signature length {sig.Length}");
                     }
                 }
 
@@ -109,20 +116,20 @@ namespace Pkcs11Tester
 
                     var session = slot.OpenSession(SessionType.ReadWrite);
                     {
-                        Console.WriteLine(session.SessionId);
-                        Console.WriteLine(session.GetSessionInfo().State);
+                        Console.WriteLine($"Session id {session.SessionId}");
+                        Console.WriteLine($"Session state {session.GetSessionInfo().State}");
 
                         if (session.GetSessionInfo().State != CKS.CKS_RW_USER_FUNCTIONS)
                         {
                             session.Login(CKU.CKU_USER, "123456");
-                            Console.WriteLine(session.GetSessionInfo().State);
+                            Console.WriteLine($"Session state {session.GetSessionInfo().State}");
                         }
 
                         var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
                                                                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 1 }) });
                         
                         var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs[0], new byte[32]);
-                        Console.WriteLine(sig.Length);
+                        Console.WriteLine($"Signature length {sig.Length}");
                     }
                 }
             }
