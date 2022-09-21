@@ -79,12 +79,15 @@ namespace Pkcs11Tester
                         var handle = session.GenerateKey(factories.MechanismFactory.Create(CKM.CKM_GENERIC_SECRET_KEY_GEN), new List<IObjectAttribute> {
                             factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_SECRET_KEY),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, (ulong)CKK.CKK_VENDOR_DEFINED | 0x59554200 | 29),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "The PKCS11 generated object"),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE_LEN, 16),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated secret key"),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, true),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, true),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, false),
@@ -100,56 +103,177 @@ namespace Pkcs11Tester
                         var type = (CKK)vals[0].GetValueAsUlong();
                         id = vals[1].GetValueAsByteArray();
                         var len = vals[2].GetValueAsUlong();
-                        Console.WriteLine($"GenerateKey CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)} CKA_VALUE_LEN {len}");
 
-                        handle = session.CreateObject(new List<IObjectAttribute> {
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_EC),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "The PKCS11 imported object"),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, true),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, true),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, true),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_EC_PARAMS, new byte[]
-                                                                            { 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07 }),
-                                                                        factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
-                                                                            { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-                                                                            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                                                                            0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
-                                                                            0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x50-20 }) });
+                        session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_EC_KEY_PAIR_GEN),
+                            new List<IObjectAttribute> {
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_EC),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EC_PARAMS, new byte[]
+                                    { 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated ec key"),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            },
+                            new List<IObjectAttribute> {
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_EC),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated ec key"),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            }, out var pub, out var priv);
 
-                        vals = session.GetAttributeValue(handle, new List<CKA> { CKA.CKA_KEY_TYPE, CKA.CKA_ID });
+                        vals = session.GetAttributeValue(pub, new List<CKA> { CKA.CKA_KEY_TYPE, CKA.CKA_ID, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT });
                         type = (CKK)vals[0].GetValueAsUlong();
                         id = vals[1].GetValueAsByteArray();
+                        var curve = vals[2].GetValueAsByteArray();
+                        var point = vals[3].GetValueAsByteArray();
+                        Console.WriteLine($"GenerateKeyPair public CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)} CKA_EC_PARAMS {Convert.ToHexString(curve)} CKA_EC_POINT {Convert.ToHexString(point)}");
 
-                        Console.WriteLine($"CreateObject CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)}");
+                        vals = session.GetAttributeValue(priv, new List<CKA> { CKA.CKA_KEY_TYPE, CKA.CKA_ID, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT });
+                        type = (CKK)vals[0].GetValueAsUlong();
+                        id = vals[1].GetValueAsByteArray();
+                        curve = vals[2].GetValueAsByteArray();
+                        point = vals[3].GetValueAsByteArray();
+                        Console.WriteLine($"GenerateKeyPair private CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)} CKA_EC_PARAMS {Convert.ToHexString(curve)} CKA_EC_POINT {Convert.ToHexString(point)}");
 
+                        session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
+                            new List<IObjectAttribute> {
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_MODULUS_BITS, 2048),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated rsa key"),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            },
+                            new List<IObjectAttribute> {
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_RSA),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated rsa key"),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            }, out pub, out priv);
+
+                        vals = session.GetAttributeValue(pub, new List<CKA> { CKA.CKA_KEY_TYPE, CKA.CKA_ID, CKA.CKA_MODULUS_BITS, CKA.CKA_MODULUS });
+                        type = (CKK)vals[0].GetValueAsUlong();
+                        id = vals[1].GetValueAsByteArray();
+                        var bits = vals[2].GetValueAsUlong();
+                        var mod = vals[3].GetValueAsByteArray();
+                        Console.WriteLine($"GenerateKeyPair public CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)} CKA_MODULUS_BITS {bits} CKA_MODULUS {Convert.ToHexString(mod)}");
+
+                        vals = session.GetAttributeValue(priv, new List<CKA> { CKA.CKA_KEY_TYPE, CKA.CKA_ID, CKA.CKA_MODULUS });
+                        type = (CKK)vals[0].GetValueAsUlong();
+                        id = vals[1].GetValueAsByteArray();
+                        mod = vals[2].GetValueAsByteArray();
+                        Console.WriteLine($"GenerateKeyPair private CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)} CKA_MODULUS {Convert.ToHexString(mod)}");
+
+                        handle = session.CreateObject(new List<IObjectAttribute> {
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_EC),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported ec privkey"),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_EC_PARAMS, new byte[]
+                                { 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07 }),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
+                                { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
+                                0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x50-20 }) });
+
+                        vals = session.GetAttributeValue(handle, new List<CKA> { CKA.CKA_KEY_TYPE, CKA.CKA_ID, CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT });
+                        type = (CKK)vals[0].GetValueAsUlong();
+                        id = vals[1].GetValueAsByteArray();
+                        curve = vals[2].GetValueAsByteArray();
+                        point = vals[3].GetValueAsByteArray();
+
+                        Console.WriteLine($"CreateObject CKA_KEY_TYPE {type} CKA_ID {Convert.ToHexString(id)} CKA_EC_PARAMS {Convert.ToHexString(curve)} CKA_EC_POINT {Convert.ToHexString(point)}");
+
+                        /*
                         session.Logout();
                         Console.WriteLine($"Session state {session.GetSessionInfo().State}");
-                        //session.Login(CKU.CKU_USER, "123456");
-                        session.Login(CKU.CKU_USER, "0001password");
+                        session.Login(CKU.CKU_USER, "123456");
                         Console.WriteLine($"Session state {session.GetSessionInfo().State}");
+                        */
+                        handle = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, id) }).Single();
 
-                        var objs = session.FindAllObjects(new List<IObjectAttribute> { factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
-                                                                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, id) });
-
-
-                        vals = session.GetAttributeValue(objs[0], new List<CKA> { CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT });
+                        vals = session.GetAttributeValue(handle, new List<CKA> { CKA.CKA_EC_PARAMS, CKA.CKA_EC_POINT });
                         var val = vals[0].GetValueAsByteArray();
                         Console.WriteLine($"CKA_EC_PARAMS {Convert.ToHexString(val)}");
                         val = vals[1].GetValueAsByteArray();
                         Console.WriteLine($"CKA_EC_POINT {Convert.ToHexString(val)}");
 
-                        var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), objs[0], new byte[32]);
+                        var sig = session.Sign(factories.MechanismFactory.Create(CKM.CKM_ECDSA_SHA256), handle, new byte[32]);
                         Console.WriteLine($"Signature length {sig.Length}");
                     }
                 }
