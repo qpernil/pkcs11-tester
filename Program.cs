@@ -13,6 +13,53 @@ using Net.Pkcs11Interop.HighLevelAPI.MechanismParams;
 
 namespace Pkcs11Tester
 {
+    public struct DataAttrs
+    {
+        CKO cls;
+        public byte[] id;
+        string label;
+        bool tok;
+        bool pri;
+        bool cop;
+        bool des;
+        bool trust;
+        string app;
+        byte[] obj;
+        byte[] val;
+
+        public DataAttrs(ISession session, IObjectHandle handle)
+        {
+            var vals = session.GetAttributeValue(handle, new List<CKA> {
+                                CKA.CKA_CLASS,
+                                CKA.CKA_TOKEN,
+                                CKA.CKA_PRIVATE,
+                                CKA.CKA_COPYABLE,
+                                CKA.CKA_DESTROYABLE,
+                                CKA.CKA_ID,
+                                CKA.CKA_LABEL,
+                                CKA.CKA_TRUSTED,
+                                CKA.CKA_APPLICATION,
+                                CKA.CKA_OBJECT_ID,
+                                CKA.CKA_VALUE,
+                        });
+
+            cls = (CKO)vals[0].GetValueAsUlong();
+            tok = vals[1].GetValueAsBool();
+            pri = vals[2].GetValueAsBool();
+            cop = vals[3].GetValueAsBool();
+            des = vals[4].GetValueAsBool();
+            id = vals[5].GetValueAsByteArray();
+            label = vals[6].GetValueAsString();
+            trust = vals[7].GetValueAsBool();
+            app = vals[8].GetValueAsString();
+            obj = vals[9].GetValueAsByteArray();
+            val = vals[10].GetValueAsByteArray();
+        }
+        public override string ToString()
+        {
+            return new { cls, tok, pri, cop, des, id = Convert.ToHexString(id), label, trust, app, obj = Convert.ToHexString(obj), val = Convert.ToHexString(val) }.ToString();
+        }
+    }
     public struct CertAttrs
     {
         CKO cls;
@@ -42,7 +89,7 @@ namespace Pkcs11Tester
                                 CKA.CKA_APPLICATION,
                                 CKA.CKA_OBJECT_ID,
                                 CKA.CKA_CERTIFICATE_TYPE,
-                                CKA.CKA_VALUE
+                                CKA.CKA_VALUE,
                         });
 
             cls = (CKO)vals[0].GetValueAsUlong();
@@ -391,7 +438,45 @@ namespace Pkcs11Tester
                         //session.Login(CKU.CKU_SO, "010203040506070801020304050607080102030405060708");
                         Console.WriteLine($"Session state {session.GetSessionInfo().State}");
 
-                        var handle = session.GenerateKey(factories.MechanismFactory.Create(CKM.CKM_GENERIC_SECRET_KEY_GEN), new List<IObjectAttribute> {
+                        var handle = session.CreateObject(new List<IObjectAttribute> {
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_DATA),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_APPLICATION, "PKCS11 test app"),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported data object"),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
+                                { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
+                                0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x50-20 }) });
+
+                        var data_attrs = new DataAttrs(session, handle);
+                        Console.WriteLine(new { data_attrs });
+
+                        handle = session.CreateObject(new List<IObjectAttribute> {
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_CERTIFICATE_TYPE, CKC.CKC_X_509),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported cert object"),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
+                                { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
+                                0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x50-20 }) });
+
+                        var cert_attrs = new CertAttrs(session, handle);
+                        Console.WriteLine(new { cert_attrs });
+
+                        handle = session.GenerateKey(factories.MechanismFactory.Create(CKM.CKM_GENERIC_SECRET_KEY_GEN), new List<IObjectAttribute> {
                             factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_SECRET_KEY),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, (ulong)CKK.CKK_VENDOR_DEFINED | 0x59554200 | 29),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE_LEN, 16),
@@ -441,6 +526,32 @@ namespace Pkcs11Tester
 
                         var hmac_attrs = new SymAttrs(session, handle);
                         Console.WriteLine(new { hmac_attrs });
+
+                        handle = session.CreateObject(new List<IObjectAttribute> {
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_SECRET_KEY),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, CKK.CKK_SHA256_HMAC),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported hmac key"),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]),
+                        });
+
+                        var hmac_attrs2 = new SymAttrs(session, handle);
+                        Console.WriteLine(new { hmac_attrs2 });
 
                         session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_EC_KEY_PAIR_GEN),
                             new List<IObjectAttribute> {
@@ -575,25 +686,6 @@ namespace Pkcs11Tester
 
                         var ec_attrs = new EcAttrs(session, handle);
                         Console.WriteLine(new { ec_attrs });
-
-                        handle = session.CreateObject(new List<IObjectAttribute> {
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_CERTIFICATE),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_CERTIFICATE_TYPE, CKC.CKC_X_509),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported cert object"),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
-                                { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                                0xbc, 0xe6, 0xfa, 0xad, 0xa7, 0x17, 0x9e, 0x84,
-                                0xf3, 0xb9, 0xca, 0xc2, 0xfc, 0x63, 0x25, 0x50-20 }) });
-
-                        var cert_attrs = new CertAttrs(session, handle);
-                        Console.WriteLine(new { cert_attrs });
 
                         id = ec_attrs.id;
 
