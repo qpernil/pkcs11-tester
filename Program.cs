@@ -585,7 +585,7 @@ namespace Pkcs11Tester
                             factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported data object"),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported cert object"),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_VALUE, new byte[32]
                                 { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
                                 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
