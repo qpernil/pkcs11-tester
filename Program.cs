@@ -584,7 +584,7 @@ namespace Pkcs11Tester
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
-                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, false),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated ec key"),
@@ -635,7 +635,7 @@ namespace Pkcs11Tester
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
-                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, false),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated rsa key"),
@@ -663,7 +663,7 @@ namespace Pkcs11Tester
                             factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
-                            factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                            factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, false),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
                             factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 imported ec privkey"),
@@ -688,7 +688,6 @@ namespace Pkcs11Tester
                         Console.WriteLine(new { ec_attrs });
 
                         id = ec_attrs.id;
-
                         /*
                         session.Logout();
                         Console.WriteLine($"Session state {session.GetSessionInfo().State}");
