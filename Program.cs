@@ -605,6 +605,59 @@ namespace Pkcs11Tester
                         var ec_priv = new EcAttrs(session, priv);
                         Console.WriteLine(new { ec_priv });
 
+                        session.GenerateKeyPair(factories.MechanismFactory.Create((CKM)0x00001055UL), // CKM_EC_EDWARDS_KEY_PAIR_GEN
+                            new List<IObjectAttribute> {
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, (CKK)0x00000040UL), // CKK_EC_EDWARDS
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EC_PARAMS, new byte[]
+                                    { 0x13, 0x0c, 0x65, 0x64, 0x77, 0x61, 0x72,
+                                      0x64, 0x73, 0x32, 0x35, 0x35, 0x31, 0x39 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated ed key"),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            },
+                            new List<IObjectAttribute> {
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PRIVATE_KEY),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_KEY_TYPE, (CKK)0x00000040UL), // CKK_EC_EDWARDS
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_TOKEN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_PRIVATE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_COPYABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SENSITIVE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_EXTRACTABLE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DESTROYABLE, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ID, new byte[] { 0, 0 }),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_LABEL, "PKCS11 generated ed key"),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_ENCRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DECRYPT, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN, true),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_SIGN_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_VERIFY_RECOVER, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_DERIVE, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_WRAP, false),
+                                factories.ObjectAttributeFactory.Create(CKA.CKA_UNWRAP, false),
+                            }, out pub, out priv);
+
+                        var ed_pub = new EcAttrs(session, pub);
+                        Console.WriteLine(new { ed_pub });
+
+                        var ed_priv = new EcAttrs(session, priv);
+                        Console.WriteLine(new { ed_priv });
+
                         session.GenerateKeyPair(factories.MechanismFactory.Create(CKM.CKM_RSA_PKCS_KEY_PAIR_GEN),
                             new List<IObjectAttribute> {
                                 factories.ObjectAttributeFactory.Create(CKA.CKA_CLASS, CKO.CKO_PUBLIC_KEY),
