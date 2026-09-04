@@ -2,3 +2,4 @@
 bin/
 obj/
 *.user
+yubihsm_pkcs11.conf
